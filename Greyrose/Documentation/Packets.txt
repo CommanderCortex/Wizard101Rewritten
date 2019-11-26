@@ -1,0 +1,233 @@
+﻿For packet information, I would highly recommend checking out this repo:
+https://github.com/Joshsora/libki/wiki/
+
+Super-mega props go out to Joshsora for his awesome findings.
+His information has saved me *many* hours of research.
+For convenience sake, and just in case the information on that repo is taken down, I've copied it all here.
+
+
+
+What is DML?
+DML, or Data Markup Language, is a data serialization system found in KingsIsle games that defines application-specific data structures that are (usually) sent over an underlying KingsIsle Networking Protocol session.
+However, it should be made clear that DML is not a component of the KingsIsle Networking Protocol, and is something entirely separate; it just so happens that it is used as the application data for Wizard101 and Pirate101.
+
+What is a DML Record?
+A "DML Record" is made out of multiple "DML Fields". A "DML Field" consists of a field name (identifier), data type, value, and a "transfer" property that determines whether the field should be copied down, or "transferred", into the binary representation when being serialized.
+
+Where is DML used in Wizard101/Pirate101?
+DML is used in multiple places across KingsIsle games for multiple reasons.
+The most important usage is inside XML Message Modules, which define DML structures that are sent as messages over a KINP session.
+They are also used inside configuration files, such as inside defaultconfig.xml inside the Root.wad of Wizard101.
+
+
+
+DML Syntax
+A DML Record can be represented as XML, and is seen this way in Message Modules and various configuration and internal files in both Wizard101 and Pirate101.
+Every Record presented in this manner starts with a <RECORD> element.
+
+Each child element inside a <RECORD> element defines a Field.
+A Field must at least define a data type via the TYPE attribute.
+Optionally, you may also specify a NOXFER attribute, which controls whether or not to "transfer" the field into a binary representation when it is being serialized/deserialized.
+A value can also be specified as a text node inside the element.
+
+Example
+
+<RECORD>
+  <_Opcode TYPE="USHRT" NOXFER="TRUE">1</_Opcode>
+  <Name TYPE="STR"></Name>
+  <Age TYPE="UBYT"></Age>
+</RECORD>
+
+Note: This example is not representative of any data from either Wizard101 or Pirate101.
+
+
+DML Data Types:
+Type 	C/C++ Type 					Binary Representation
+BYT 	int8_t 						Signed 1-byte integer.
+UBYT 	uint8_t 					Unsigned 1-byte integer.
+SHRT 	int16_t 					Signed 2-byte integer in little-endian byte order.
+USHRT 	uint16_t 					Unsigned 2-byte integer in little-endian byte order.
+INT 	int32_t 					Signed 4-byte integer in little-endian byte order.
+UINT 	uint32_t 					Unsigned 4-byte integer in little-endian byte order.
+STR 	uint8_t[] or char[] 		A length-prefixed string of bytes, with the length being a USHRT.
+WSTR 	uint16_t[] or char16_t[]	A length-prefixed string of little-endian UTF-16 characters without the Byte Order Mark, with the length being a USHRT.
+FLT 	float 						IEEE-754 32-bit floating point integer in little-endian byte order.
+DBL 	double 						IEEE-754 64-bit floating point integer in little-endian byte order.
+GID 	uint64_t 					Unsigned 8-byte integer in little-endian byte order.
+
+
+
+
+KingsIsle Networking Protocol (KINP) uses a hybrid delimited/length-prefixed approach to message framing. Each message is prefixed with a 2-byte sequence, "0xF00D", in little-endian byte order.
+We've decided to name this the "Start Signal", as it indicates the beginning of a message, however, it can also be referred to as the "Food Header".
+After receiving the start signal, the length of the incoming message is sent as an unsigned 2-byte integer in little-endian byte order, followed by the message payload.
+Note: This same structure is used regardless of the underlying transport protocol (TCP/UDP).
+
+Structure:
+Name 			Type 			Description
+startSignal 	uint16_t 		Always 0xF00D. Indicates the start of a message.
+length 			uint16_t 		The length of the message payload.
+payload 		uint8_t[length] The message payload.
+
+
+Message payload Structure:
+Name 		Type 		Description
+isControl 	uint8_t 	If false (<1), then the message data is application-specific. Otherwise, the message data is a control message determined by the opCode field.
+opCode 		uint8_t 	If isControl is true (>0), this indicates the type of control message found in the message data. Otherwise, this has not been observed to be anything but 0.
+undefined 	uint8_t 	Hasn't been observed as anything but 0. Unknown use.
+undefined 	uint8_t 	Hasn't been observed as anything but 0. Unknown use.
+data 		uint8_t[] 	The message data.
+
+
+
+OPCODES:
+
+Session Offer
+The opCode for this message is 0x0. The server sends this to new clients, and is the first message for establishing a session.
+Structure:
+Name 			Type 		Description
+sessionId 		uint16_t 	The ID that has been allocated to this session by the Server.
+undefined 		uint32_t 	Hasn't been observed to be anything above 0. Potentially the upper 4 bytes of a timestamp.
+timestamp 		int32_t 	The UNIX timestamp (seconds since 01/01/1970) at the time this message was sent.
+milliseconds 	uint32_t 	The number of milliseconds we were in to the current second when this message was sent.
+
+
+
+Session Accept
+The opCode for this message is 0x5. The client sends this to the server to alert it that a session has been accepted.
+Structure:
+Name 			Type 		Description
+undefined 		uint16_t 	Hasn't been observed to be anything above 0.
+undefined 		uint32_t 	Hasn't been observed to be anything above 0. Potentially the upper 4 bytes of a timestamp.
+timestamp 		int32_t 	The UNIX timestamp (seconds since 01/01/1970) at the time this message was sent.
+milliseconds 	uint32_t 	The number of milliseconds we were in to the current second when this message was sent.
+sessionId 		uint16_t 	The ID of the session that the client is accepting (from the SESSION_OFFER).
+
+
+
+Keep Alive and Keep Alive Response
+The Opcodes for these messages are 0x3 and 0x4 respectively.
+“Keep Alives” are sent by the client to the server every 10 seconds, and sent by the server to the client every minute.
+The structure is different depending on who initiates the Keep Alive.
+Oddly enough, the payload within a KEEP_ALIVE_RESPONSE packet is always an exact copy of the KEEP_ALIVE data that is being responded to; no fields are changed.
+
+Client-initiated Structure:
+This is the packet structure that is used when the client is sending the KEEP_ALIVE (0x3) packet, and the server is sending the KEEP_ALIVE_RESPONSE (0x4) packet.
+Name 			Type 		Description
+sessionId 		uint16_t 	The ID of the session that is pinging the server.
+milliseconds 	uint16_t 	How many milliseconds into the current minute the client was when sending this Keep Alive. (Based on the time since the session was established)
+minutes 		uint16_t 	How many minutes have been since the session was established.
+
+
+Server-initiated Structure:
+This is the packet structure that is used when the server is sending the KEEP_ALIVE (0x3) packet, and the client is sending the KEEP_ALIVE_RESPONSE (0x4) packet.
+Name 		Type 		Description
+undefined 	uint16_t 	Hasn’t been observed to be anything but 0.
+timestamp 	uint32_t 	The number of milliseconds since the server started.
+
+
+
+
+
+
+
+
+Message Modules
+A "Message Module" is an XML-based resource that defines a "Message Service".
+A Message Service contains multiple DML Records that act as templates for application-specific messages.
+They can be numerically referenced by their unique ServiceID that is defined within a unique record called _ProtocolInfo.
+Each DML record inside a Message Service is also given a MessageType that is determined by a _MsgOrder field, or by alphabetically ordering the names of the messages if that field is not present.
+
+XML Format
+The root element of a XML message module does not need to be anything specific, however, it's often the name of the file without the .xml extension.
+The tag of children elements define the names of messages, and the child <RECORD> element describes a template of that message.
+
+There are special reserved field names for important message metadata:
+Name 			Type 	Description
+_MsgName 		STR 	The name of the message. (Overrides the element's tag)
+_MsgDescription STR 	A description of the message.
+_MsgHandler 	STR 	Determines which function/method should be called whenever a session receives this message.
+_MsgAccessLvl 	UBYT 	The minimum access level a session is required to have for a server to handle this message.
+_MsgOrder 		UBYT 	Where the message appears in the lookup table. (Used to determine message type)
+
+The only exception to this is the _ProtocolInfo element.
+This element does not describe a message, but rather provides metadata to the Message Service (such as a name, description, and ID).
+These are the fields found within this element:
+Name 				Type 	Description
+ServiceID 			UBYT 	A unique ID for the message service being defined.
+ProtocolType 		STR 	A unique, usually short, name for the message service being defined.
+ProtocolVersion 	INT 	The version of the message module.
+ProtocolDescription STR 	A short description of the message service.
+
+
+XML Example:
+This is the BaseMessages.xml file from both Wizard101 and Pirate101.
+
+<?xml version="1.0" ?>
+<BaseMessages>
+<_ProtocolInfo>
+  <RECORD>
+    <ServiceID TYPE="UBYT">1</ServiceID>
+    <ProtocolType TYPE="STR">SYSTEM</ProtocolType>
+    <ProtocolVersion TYPE="INT">1</ProtocolVersion>
+    <ProtocolDescription TYPE="STR">All Common System Messages - Not Game Messages</ProtocolDescription>
+  </RECORD>
+</_ProtocolInfo>
+<MSG_PING>
+  <RECORD>
+    <_MsgType TYPE="UBYT" NOXFER="TRUE">1</_MsgType>
+    <_MsgName TYPE="STR" NOXFER="TRUE">MSG_PING</_MsgName>
+    <_MsgDescription TYPE="STR" NOXFER="TRUE">PING request.</_MsgDescription>
+    <_MsgHandler TYPE="STR" NOXFER="TRUE">MSG_Ping</_MsgHandler>
+    <_MsgAccessLvl TYPE="UBYT" NOXFER="TRUE">0</_MsgAccessLvl>
+  </RECORD>
+</MSG_PING>
+<MSG_PING_RSP>
+  <RECORD>
+    <_MsgType TYPE="UBYT" NOXFER="TRUE">2</_MsgType>
+    <_MsgName TYPE="STR" NOXFER="TRUE">MSG_PING_RSP</_MsgName>
+    <_MsgDescription TYPE="STR" NOXFER="TRUE">PING response.</_MsgDescription>
+    <_MsgHandler TYPE="STR" NOXFER="TRUE">MSG_PingRsp</_MsgHandler>
+    <_MsgAccessLvl TYPE="UBYT" NOXFER="TRUE">0</_MsgAccessLvl>
+  </RECORD>
+</MSG_PING_RSP>
+</BaseMessages>
+
+In this example, two messages are defined: MSG_PING and MSG_PING_RSP. These are two simple messages without any fields.
+The message service itself is also given metadata via _ProtocolInfo.
+The message service is given the ID 1 via the ServiceID field in the _ProtocolInfo record, as well as a ProtocolType, ProtocolVersion, and ProtocolDescription.
+The two messages that are defined, MSG_PING, and MSG_PING_RSP, are given the message types 1 and 2 respectively.
+However, this value is not given by the _MsgType valuethis is a legacy field that is ignored entirely.
+The values 1 and 2 are calculated based on an alphabetical ordering of the _MsgName field because _MsgOrder is not specified.
+
+
+
+
+
+DML Message Structure
+When a DML message is being transferred inside a KINP message as application data, there is a header structure to tell the recipient which Service ID and Message Type should be used to find the message template for deserializing the message into a Record.
+Name 			Type 		Description
+serviceId 		uint8_t 	Determines which message module/service the message template is from.
+messageType 	uint8_t 	Determines which message template from the module was used to construct the data preceding this header.
+length		 	uint16_t 	The length of the entire message (including this header).
+
+A binary serialization of a DML record that follows the same structure as the message template then follows.
+Example,gGiven the message template:
+
+<MSG_CHAT>
+  <RECORD>
+    <Name TYPE="STR"></Name>
+    <Message TYPE="STR"></Message>
+  </RECORD>
+</MSG_CHAT>
+
+With the ServiceID 0x0A, and the MessageType 0x21, a binary representation may look like this:
+
+0A 21 15 00 08 00 4A 6F 73 68 73 6F 72 61 05 00 48 65 6C 6C 6F
+
+With the values:
+serviceId: 10 (0A)
+messageType: 33 (21)
+length: 21 (15 00)
+Name: "Joshsora" (08 00 4A 6F 73 68 73 6F 72 61)
+Message: "Hello" (05 00 48 65 6C 6C 6F)

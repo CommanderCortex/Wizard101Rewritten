@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.421
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Greyrose", "Greyrose\Greyrose.csproj", "{146CB22D-45AE-4895-8709-E5CC17D4A0AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{146CB22D-45AE-4895-8709-E5CC17D4A0AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{146CB22D-45AE-4895-8709-E5CC17D4A0AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{146CB22D-45AE-4895-8709-E5CC17D4A0AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{146CB22D-45AE-4895-8709-E5CC17D4A0AD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D60FC49A-E527-4B8D-AEC3-B6B1B9E19046}
+	EndGlobalSection
+EndGlobal

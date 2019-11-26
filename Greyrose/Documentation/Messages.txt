@@ -1,0 +1,28 @@
+﻿Being that KingsIsle aren't the most security-conscious developers, they left all of their message information in clear text for us to use!
+
+To get the current messages, you can extract them from your root.wad file (located in Wizard101\Data\GameData\)
+
+To do so, you will need the free tool [Quickbms](https://aluigi.altervista.org/quickbms.htm)  
+You will also need the [kiwad extractor](https://aluigi.altervista.org/bms/wizard101_kiwad.bms) located on that same website.
+
+Once you've downloaded them both, extract all of the files in the quickbms zip file.
+Place the 'wizard101_kiwad.bms' file in the same folder you extracted quickbms.
+
+Drag 'wizard101_kiwad.bms' onto 'quickbms.exe'
+In the window that opens, select your Root.wad file.
+Choose a folder to extract the contents.
+
+When quickbms has finished extracting all of the files in root.wad, open the directory you extracted the files.
+There will be a lot of .xml files in the root directory.
+Any files that end with 'Messages.xml' will be message files.
+You will also find some messages inside the 'Messages' sub-folder.
+
+Each message file will have a 'ServiceID' entry near the top. This is the Service ID that is used to determine which message-file to use.
+eg; if a packet had a Service ID of 5, it would use the GameMessages.xml file, because GameMessages has a Service ID of 5.
+
+MessageID is a bit trickier though.
+Unless the message file contains 'MsgOrder' entries (not many files do), the MessageID will be determined by sorting the message names alphabetically.
+
+To save time, I've created a tool that will take any message files and output the message-names in order (eg; line 1 is msgid 1, line 50 is msgid 50)
+Parsing messages by looking up the msgid and grabbing the data types automatically could be used to parse unhandled client>server messages. But we'll still need to add handlers (and responses) for each svcid/msgid anyway, so it's kind of pointless.
+

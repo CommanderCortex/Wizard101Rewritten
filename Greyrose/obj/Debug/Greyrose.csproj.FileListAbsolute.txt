@@ -1,0 +1,17 @@
+D:\Projects\Greyrose\Greyrose\bin\Debug\Greyrose.exe.config
+D:\Projects\Greyrose\Greyrose\bin\Debug\Greyrose.exe
+D:\Projects\Greyrose\Greyrose\bin\Debug\Greyrose.pdb
+D:\Projects\Greyrose\Greyrose\bin\Debug\Ionic.Zip.dll
+D:\Projects\Greyrose\Greyrose\obj\Debug\Greyrose.csprojAssemblyReference.cache
+D:\Projects\Greyrose\Greyrose\obj\Debug\Greyrose.csproj.CoreCompileInputs.cache
+D:\Projects\Greyrose\Greyrose\obj\Debug\Greyrose.csproj.CopyComplete
+D:\Projects\Greyrose\Greyrose\obj\Debug\Greyrose.exe
+D:\Projects\Greyrose\Greyrose\obj\Debug\Greyrose.pdb
+C:\Users\Jerry\Documents\wizard101\Greyrose\bin\Debug\Greyrose.exe.config
+C:\Users\Jerry\Documents\wizard101\Greyrose\bin\Debug\Greyrose.exe
+C:\Users\Jerry\Documents\wizard101\Greyrose\bin\Debug\Greyrose.pdb
+C:\Users\Jerry\Documents\wizard101\Greyrose\bin\Debug\Ionic.Zip.dll
+C:\Users\Jerry\Documents\wizard101\Greyrose\obj\Debug\Greyrose.csprojAssemblyReference.cache
+C:\Users\Jerry\Documents\wizard101\Greyrose\obj\Debug\Greyrose.csproj.CopyComplete
+C:\Users\Jerry\Documents\wizard101\Greyrose\obj\Debug\Greyrose.exe
+C:\Users\Jerry\Documents\wizard101\Greyrose\obj\Debug\Greyrose.pdb
