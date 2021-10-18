@@ -14,6 +14,8 @@ namespace WizPS
     {
         public struct PlayerStruct
         {
+            public int Level = 100;
+            
             public float X;
             public float Y;
             public float Z;
